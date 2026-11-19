@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Admin · StudyHelper{% endblock %}
+{% block content %}
+<h2 style="margin-top:0">Admin dashboard</h2>
+
+<div class="grid g6">
+  <div class="card stat"><b>{{ stats.users }}</b><span>Users</span></div>
+  <div class="card stat"><b>{{ stats.students }}</b><span>Students</span></div>
+  <div class="card stat"><b>{{ stats.admins }}</b><span>Admins</span></div>
+  <div class="card stat"><b>{{ stats.tasks }}</b><span>Tasks</span></div>
+  <div class="card stat"><b>{{ stats.completion }}%</b><span>Completed</span></div>
+  <div class="card stat"><b class="{% if stats.overdue %}late{% endif %}">{{ stats.overdue }}</b><span>Overdue</span></div>
+</div>
+
+<div class="card">
+  <h3>Tasks by status</h3>
+  {% for s in by_status %}
+    <div class="row" style="margin-bottom:.4rem">
+      <span style="width:90px">{{ s.label }}</span>
+      <div class="bar" style="flex:1"><i style="width:{{ s.pct }}%"></i></div>
+      <span style="width:60px;text-align:right">{{ s.count }}</span>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <h3>Users</h3>
+  <div class="scroll"><table>
+    <tr><th>Username</th><th>Email</th><th>Role</th><th>Tasks</th><th>Joined</th><th>Status</th><th>Actions</th></tr>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.username }}</td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.profile.get_role_display }}</td>
+      <td>{{ u.task_count }}</td>
+      <td>{{ u.date_joined|date:"M j, Y" }}</td>
+      <td>{% if u.is_active %}Active{% else %}<span class="late">Disabled</span>{% endif %}</td>
+      <td>
+        {% if u != request.user %}
+        <div class="row">
+          <form class="inline" method="post" action="{% url 'admin_user_role' u.pk %}">{% csrf_token %}
+            <button class="btn sm ghost" type="submit">{% if u.profile.role == 'admin' %}Make student{% else %}Make admin{% endif %}</button></form>
+          <form class="inline" method="post" action="{% url 'admin_user_active' u.pk %}">{% csrf_token %}
+            <button class="btn sm ghost" type="submit">{% if u.is_active %}Disable{% else %}Enable{% endif %}</button></form>
+          <form class="inline" method="post" action="{% url 'admin_user_delete' u.pk %}" onsubmit="return confirm('Delete this user and all their tasks?')">{% csrf_token %}
+            <button class="btn sm danger" type="submit">Delete</button></form>
+        </div>
+        {% else %}<span class="muted">(you)</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table></div>
+</div>
+
+<div class="card">
+  <h3>Latest tasks (all users)</h3>
+  <div class="scroll"><table>
+    <tr><th>Task</th><th>Owner</th><th>Priority</th><th>Status</th><th>Due</th><th></th></tr>
+    {% for t in recent_tasks %}
+    <tr>
+      <td>{{ t.title }}</td><td>{{ t.user.username }}</td>
+      <td>{{ t.get_priority_display }}</td><td>{{ t.get_status_display }}</td>
+      <td>{% if t.due_date %}{{ t.due_date|date:"M j" }}{% else %}—{% endif %}{% if t.is_overdue %} <span class="late">overdue</span>{% endif %}</td>
+      <td><form class="inline" method="post" action="{% url 'admin_task_delete' t.pk %}" onsubmit="return confirm('Delete this task?')">{% csrf_token %}
+        <button class="btn sm danger" type="submit">✕</button></form></td>
+    </tr>
+    {% empty %}<tr><td colspan="6" class="muted">No tasks yet.</td></tr>
+    {% endfor %}
+  </table></div>
+</div>
+{% endblock %}

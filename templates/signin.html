@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Sign in · StudyHelper{% endblock %}
+{% block content %}
+<div class="card auth">
+  <h2>Sign in</h2>
+  <form method="post">{% csrf_token %}
+    {{ form.non_field_errors }}
+    <label>Username</label>{{ form.username.errors }}{{ form.username }}
+    <label>Password</label>{{ form.password.errors }}{{ form.password }}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="btn" type="submit">Sign in</button>
+  </form>
+  <p class="meta"><a href="{% url 'password_reset' %}">Forgot password?</a> · <a href="{% url 'signup' %}">Create an account</a></p>
+</div>
+{% endblock %}

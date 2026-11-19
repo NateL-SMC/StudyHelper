@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Edit task · StudyHelper{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px;margin:auto">
+  <h2>Edit task</h2>
+  <form method="post">{% csrf_token %}
+    {% for f in form %}<label>{{ f.label }}</label>{{ f.errors }}{{ f }}{% endfor %}
+    <div class="row"><button class="btn" type="submit">Save</button><a class="btn ghost" href="{% url 'dashboard' %}">Cancel</a></div>
+  </form>
+</div>
+{% endblock %}
